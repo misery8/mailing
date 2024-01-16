@@ -1,0 +1,444 @@
+openapi: 3.0.3
+info:
+  title: Messaging Service
+  version: '0.1'
+paths:
+  /api/v1/clients/:
+    post:
+      operationId: api_v1_clients_create
+      description: Добавления нового клиента
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+  /api/v1/clients/{id}/:
+    get:
+      operationId: api_v1_clients_retrieve
+      description: |-
+        Обновление данных атрибутов клиента.
+        Удаления клиента из справочника
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    put:
+      operationId: api_v1_clients_update
+      description: |-
+        Обновление данных атрибутов клиента.
+        Удаления клиента из справочника
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Client'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Client'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Client'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    patch:
+      operationId: api_v1_clients_partial_update
+      description: |-
+        Обновление данных атрибутов клиента.
+        Удаления клиента из справочника
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedClient'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+          description: ''
+    delete:
+      operationId: api_v1_clients_destroy
+      description: |-
+        Обновление данных атрибутов клиента.
+        Удаления клиента из справочника
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/mailing/{id}/:
+    get:
+      operationId: api_v1_mailing_retrieve
+      description: Обновление данных рассылки
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    put:
+      operationId: api_v1_mailing_update
+      description: Обновление данных рассылки
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Mailing'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    patch:
+      operationId: api_v1_mailing_partial_update
+      description: Обновление данных рассылки
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMailing'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mailing'
+          description: ''
+    delete:
+      operationId: api_v1_mailing_destroy
+      description: Обновление данных рассылки
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/mailing/{id}/statistic/:
+    get:
+      operationId: api_v1_mailing_statistic_retrieve
+      description: Получение детальной статистики, отправленных сообщений по конкретной
+        рассылке
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MailingStatisticDetail'
+          description: ''
+  /api/v1/mailing/statistic/:
+    get:
+      operationId: api_v1_mailing_statistic_list
+      description: |-
+        Получение общей статистики по созданным рассылкам
+         и количеству отправленных сообщений по ним
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MailingStatisticList'
+          description: ''
+components:
+  schemas:
+    Client:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Имя клиента
+        phone_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Номер телефона
+        tag:
+          type: array
+          items:
+            type: integer
+            title: Тег
+          title: Тег
+        mobile_code:
+          type: string
+          title: Код мобильного оператора
+          maxLength: 2
+      required:
+      - mobile_code
+      - name
+      - phone_number
+      - tag
+    Mailing:
+      type: object
+      properties:
+        date_start:
+          type: string
+          format: date-time
+          title: Дата начала
+        date_end:
+          type: string
+          format: date-time
+          title: Дата окончания
+        message:
+          type: string
+          title: Текст уведомления
+        attribute_filter:
+          type: array
+          items:
+            type: integer
+            title: Фильтр свойств клиентов
+          title: Фильтр свойств клиентов
+      required:
+      - attribute_filter
+      - date_end
+      - date_start
+      - message
+    MailingStatisticDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client:
+          type: integer
+          title: Клиент
+        mailing:
+          type: integer
+          title: Рассылка
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          title: Статус
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата отправки
+      required:
+      - client
+      - created_at
+      - id
+      - mailing
+      - status
+    MailingStatisticList:
+      type: object
+      properties:
+        mailing:
+          type: string
+        status:
+          type: string
+        count_of_messages:
+          type: integer
+      required:
+      - count_of_messages
+      - mailing
+      - status
+    PatchedClient:
+      type: object
+      properties:
+        name:
+          type: string
+          title: Имя клиента
+        phone_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Номер телефона
+        tag:
+          type: array
+          items:
+            type: integer
+            title: Тег
+          title: Тег
+        mobile_code:
+          type: string
+          title: Код мобильного оператора
+          maxLength: 2
+    PatchedMailing:
+      type: object
+      properties:
+        date_start:
+          type: string
+          format: date-time
+          title: Дата начала
+        date_end:
+          type: string
+          format: date-time
+          title: Дата окончания
+        message:
+          type: string
+          title: Текст уведомления
+        attribute_filter:
+          type: array
+          items:
+            type: integer
+            title: Фильтр свойств клиентов
+          title: Фильтр свойств клиентов
+    StatusEnum:
+      enum:
+      - sending
+      - received
+      - error
+      type: string
+      description: |-
+        * `sending` - Sending
+        * `received` - Received
+        * `error` - Error
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

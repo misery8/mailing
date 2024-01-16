@@ -14,6 +14,10 @@ class StatusMailing(models.TextChoices):
 class Tag(models.Model):
     name = models.CharField(max_length=255, verbose_name='Наименование')
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+
 
 class Client(models.Model):
 

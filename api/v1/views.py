@@ -15,7 +15,7 @@ from .serializers import (
     ClientSerializer,
     MailingSerializer,
     MailingStatisticDetailSerializer,
-
+    MailingStatisticList,
 )
 
 
@@ -51,6 +51,7 @@ class MailingStatisticListAPIView(ListAPIView):
     Получение общей статистики по созданным рассылкам
      и количеству отправленных сообщений по ним
     """
+    serializer_class = MailingStatisticList
 
     def get_queryset(self):
         return (
