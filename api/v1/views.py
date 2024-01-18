@@ -61,11 +61,6 @@ class MailingStatisticListAPIView(ListAPIView):
                 count_of_message=Count('id')
             )
         )
-        # Общее количество сообщений отправленных с группировкой по статусу
-        # SELECT COUNT(msg.id) as count_of_message,
-        # mailing.id
-        # msg.status
-        # FROM mailing inner join message as msg on mailing.id = msg.mailing_id
 
 
 class MailingStatisticDetailAPIView(RetrieveAPIView):
