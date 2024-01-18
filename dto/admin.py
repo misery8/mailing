@@ -5,6 +5,7 @@ from .models import (
     Mailing,
     Message,
     Tag,
+    ClientProperty,
 )
 
 
@@ -26,3 +27,8 @@ class MessageAdmin(admin.ModelAdmin):
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
+
+
+@admin.register(ClientProperty)
+class ClientProperty(admin.ModelAdmin):
+    list_display = ('id', 'mobile_code', 'tag')

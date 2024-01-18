@@ -2,15 +2,33 @@ version: '3.8'
 
 services:
   web:
-    build: ..
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: mailing
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./:/opt/src/mailing/
     expose:
       - 8000
     env_file:
-      - ../.env
+      - ./.env
     depends_on:
+      - db
+      - redis
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: mailing
+    command: celery -A mailing worker -l info
+    volumes:
+      - ./:/opt/src/mailing/
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
       - db
 
   db:
@@ -19,7 +37,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../.env
+      - ./.env
     environment:
       POSTGRES_DB: mailing
 
@@ -29,3 +47,6 @@ services:
       - "80:80"
     depends_on:
       - web
+
+  redis:
+    image: redis:7-alpine

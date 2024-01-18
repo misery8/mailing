@@ -1,13 +1,14 @@
 import pytz
 
+from django.core.validators import RegexValidator
 from django.db import models
 
 TIMEZONE = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 
 class StatusMailing(models.TextChoices):
+    new = 'new'
     sending = 'sending'
-    received = 'received'
     error = 'error'
 
 
@@ -18,13 +19,17 @@ class Tag(models.Model):
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
+    def __str__(self):
+        return self.name
+
 
 class Client(models.Model):
-
-    name = models.CharField(verbose_name='Имя клиента')
-    phone_number = models.PositiveIntegerField(
+    name = models.CharField(verbose_name='Наименование')
+    phone_number = models.CharField(
         verbose_name='Номер телефона',
-        unique=True
+        unique=True,
+        max_length=20,
+        validators=[RegexValidator(regex='^(\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$')]
     )
     mobile_code = models.CharField(
         verbose_name='Код мобильного оператора',
@@ -43,7 +48,7 @@ class Client(models.Model):
         verbose_name_plural = 'Клиенты'
 
     def __str__(self):
-        return set(self.name)
+        return str(self.name)
 
 
 class Mailing(models.Model):
@@ -64,13 +69,17 @@ class Mailing(models.Model):
 class Message(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата отправки')
-    status = models.CharField(verbose_name='Статус', choices=StatusMailing.choices)
+    status = models.CharField(
+        verbose_name='Статус',
+        choices=StatusMailing.choices,
+        default='new'
+    )
     client = models.OneToOneField(
         'Client',
         verbose_name='Клиент',
         on_delete=models.CASCADE
     )
-    mailing = models.OneToOneField(
+    mailing = models.ForeignKey(
         'Mailing',
         verbose_name='Рассылка',
         on_delete=models.CASCADE,
