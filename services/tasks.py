@@ -1,32 +1,26 @@
-import os
+from celery import shared_task
 
-import requests
-
-from config.celery import app
-from dto.models import StatusMailing
 from .services import (
-    get_messages
+    get_mailing,
+    send_notifications_for_clients,
+    get_clients_to_notify,
 )
 
-TOKEN = os.getenv('TOKEN')
 
+@shared_task
+def process_mailing():
 
-@app.task
-def send_client_notification():
-
-    messages = get_messages()
-    for message in messages:
-        response = requests.post(
-            f'https://probe.fbrq.cloud/v1/send/{message.id}',
-            headers={'Authorization': f'Bearer {TOKEN}'},
-            json={
-                'id': message.id,
-                'phone': message.client.phone_number,
-                'text': message.mailing.message
-            }
+    mailing_settings = get_mailing()
+    for setting in mailing_settings:
+        clients_to_notify = get_clients_to_notify(setting)
+        send_notifications_for_clients(
+            mailing_settings_id=setting.id,
+            client_ids=clients_to_notify
         )
-        if response.status_code == 201:
-            message.status = StatusMailing.sending
-        else:
-            message.status = StatusMailing.error
-        message.save()
+
+
+@shared_task
+def process_notifications(mailing_ids: list[int]) -> None:
+    # TODO: Проверка рассылок на временной интервал
+    pass
+

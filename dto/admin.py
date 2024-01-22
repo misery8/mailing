@@ -2,10 +2,9 @@ from django.contrib import admin
 
 from .models import (
     Client,
-    Mailing,
-    Message,
+    MailingSettings,
+    Notification,
     Tag,
-    ClientProperty,
 )
 
 
@@ -14,21 +13,16 @@ class ClientAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone_number')
 
 
-@admin.register(Mailing)
+@admin.register(MailingSettings)
 class MailingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'date_start', 'date_end')
+    list_display = ('id', 'start_time', 'end_time')
 
 
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'status', 'client')
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
-
-
-@admin.register(ClientProperty)
-class ClientProperty(admin.ModelAdmin):
-    list_display = ('id', 'mobile_code', 'tag')

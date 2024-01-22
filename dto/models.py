@@ -1,111 +1,143 @@
-import pytz
+import zoneinfo
 
 from django.core.validators import RegexValidator
 from django.db import models
-
-TIMEZONE = tuple(zip(pytz.all_timezones, pytz.all_timezones))
-
-
-class StatusMailing(models.TextChoices):
-    new = 'new'
-    sending = 'sending'
-    error = 'error'
+from django.utils.translation import gettext_lazy as _
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=255, verbose_name='Наименование')
+
+    name = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('Название тега')
+    )
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
 
-    def __str__(self):
-        return self.name
+
+class ClientAttribute(models.Model):
+
+    operator_code = models.CharField(max_length=6)
+    tags = models.ManyToManyField(Tag, related_name='tags')
+
+    class Meta:
+        verbose_name = 'Атрибут клиента'
+        verbose_name_plural = 'Атрибуты клиентов'
 
 
 class Client(models.Model):
-    name = models.CharField(verbose_name='Наименование')
+
+    operator_code_validator = RegexValidator(
+        regex=r'^\+\d{1,5}$',  # Паттерн для кода мобильного оператора: + и от 1 до 5 цифр
+        message='Код мобильного оператора должен начинаться с символа "+"'
+    )
+
+    phone_number_validator = RegexValidator(
+        regex=r'^7\d{10}$',  # Паттерн для номера телефона: 7 и 10 цифр
+        message='Номер телефона должен быть в формате 7XXXXXXXXXX'
+    )
+
+    name = models.CharField(max_length=255, verbose_name=_('Наименование'))
     phone_number = models.CharField(
-        verbose_name='Номер телефона',
+        max_length=12,
         unique=True,
-        max_length=20,
-        validators=[RegexValidator(regex='^(\+?\d{1,3})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$')]
+        validators=[phone_number_validator],
+        verbose_name='Номер телефона'
     )
-    mobile_code = models.CharField(
-        verbose_name='Код мобильного оператора',
-        max_length=2
+    operator_code = models.CharField(
+        max_length=6,
+        validators=[operator_code_validator],
+        verbose_name='Код мобильного оператора'
     )
-    tag = models.ManyToManyField('Tag', verbose_name='Тег')
+    tags = models.ManyToManyField(Tag, verbose_name='Теги')
     timezone = models.CharField(
-        verbose_name='Часовой пояс',
-        max_length=36,
-        choices=TIMEZONE,
-        default='Europe/Moscow'
+        choices=tuple(zip(zoneinfo.available_timezones(), zoneinfo.available_timezones())),
+        default='Europe/Moscow',
+        verbose_name=_('Часовой пояс')
     )
 
     class Meta:
         verbose_name = 'Клиент'
         verbose_name_plural = 'Клиенты'
 
-    def __str__(self):
-        return str(self.name)
 
+class MailingSettings(models.Model):
 
-class Mailing(models.Model):
-
-    date_start = models.DateTimeField(verbose_name='Дата начала')
-    date_end = models.DateTimeField(verbose_name='Дата окончания')
-    message = models.TextField(verbose_name='Текст уведомления')
-    attribute_filter = models.ManyToManyField(
-        'ClientProperty',
-        verbose_name='Фильтр свойств клиентов'
+    start_time = models.DateTimeField(verbose_name='Дата и время начала рассылки')
+    end_time = models.DateTimeField(verbose_name='Дата и время окончания рассылки')
+    message_text = models.TextField(verbose_name='Текст сообщения')
+    client_filter = models.ManyToManyField(
+        ClientAttribute,
+        related_name='mailing_settings',
+        verbose_name='Фильтр клиентов'
     )
 
     class Meta:
         verbose_name = 'Настройка рассылки'
-        verbose_name_plural = 'Настройки рассылки'
+        verbose_name_plural = 'Настройки рассылок'
 
 
-class Message(models.Model):
+class NotificationStatus(models.TextChoices):
+    SENT = 'Sent', 'Отправлено'
+    FAILED = 'Failed', 'Ошибка'
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата отправки')
+
+class Notification(models.Model):
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата и время создания'
+    )
     status = models.CharField(
-        verbose_name='Статус',
-        choices=StatusMailing.choices,
-        default='new'
+        max_length=10,
+        choices=NotificationStatus.choices,
+        default=NotificationStatus.SENT,
+        verbose_name='Статус'
     )
-    client = models.OneToOneField(
-        'Client',
-        verbose_name='Клиент',
-        on_delete=models.CASCADE
-    )
-    mailing = models.ForeignKey(
-        'Mailing',
-        verbose_name='Рассылка',
+    mailing_settings = models.ForeignKey(
+        MailingSettings,
         on_delete=models.CASCADE,
-        related_name='mailing'
+        verbose_name='Настройка рассылки'
+    )
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        verbose_name='Клиент'
     )
 
     class Meta:
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
 
-    def __str__(self):
-        return f'{self.status}-{self.client} - {self.created_at}'
 
+class NotificationStatistics(models.Model):
 
-class ClientProperty(models.Model):
-
-    mobile_code = models.CharField(max_length=2, verbose_name='Код мобильного оператора')
-    tag = models.ForeignKey(
-        'Tag',
-        verbose_name='Тег',
-        on_delete=models.SET_NULL, null=True
+    notification = models.ForeignKey(
+        'Notification',
+        on_delete=models.CASCADE,
+        verbose_name=_('Уведомление')
+    )
+    client = models.ForeignKey(
+        'Client',
+        on_delete=models.CASCADE,
+        verbose_name=_('Клиент')
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=NotificationStatus.choices,
+        verbose_name=_('Статус')
+    )
+    sent_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Дата и время отправки')
     )
 
     class Meta:
-        verbose_name = 'Фильтр свойств клиента'
-        verbose_name_plural = 'Фильтры свойств клиентов'
-
-    def __str__(self):
-        return f'{self.mobile_code}/{str(self.tag)}'
+        verbose_name = _('Статистика уведомления')
+        verbose_name_plural = _('Статистика уведомлений')

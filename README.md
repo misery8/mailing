@@ -1,68 +1,52 @@
-# Сервис рассылки уведомлений
+# Notification Service
 
-Сервис, который по заданным правилам запускает рассылку по списку клиентов. Отправка осуществляется
-на сторонний сервис по средствам API.
+Notification Service - это сервис для управления рассылками уведомлений с использованием Django, Celery, PostgreSQL и Redis.
 
-Проект можно запустить как с использованием Docker, так и настроить полностью в ручную.
+## Установка
 
-Взаимодействие с сервисом реализовано через API интерфейс. Описание методов API можно найти по адресу /docs/.
+### Зависимости
 
-# Технологии
-- Docker
-- Redis
-- Celery
-- PostgreSQL
-- Python 3.11
-- Django 4.2
-- DRF
-- nginx
+Убедитесь, что у вас установлены следующие инструменты:
 
-# Начало работы
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
-Docker:
+### Шаги установки
 
-1. Клонируйте проект к себе на компьютер с помощью команды:
+1. Склонируйте репозиторий:
+
 ```shell
-git clone https://github.com:misery8/mailing.git
+git clone https://github.com/yourusername/notification-service.git
+cd notification-service
 ```
 
-2. Перейдите в проект и скопируйте .env.example дав название .env,
-и заполните все значения в файле .env:
+2. Скопируйте файл .env.example в корне проекта и заполните переменные окружения.
+3. Запустите приложение с помощью Docker Compose:
 ```shell
-cp .env.example .env
+docker-compose up -d --build
 ```
-3. Необходимо выполнить сборку проекта, а затем запустить (возможно понадобится использование sudo):
+Эта команда создаст и запустит контейнеры для Django, PostgreSQL, Redis, Celery Worker и Celery Beat.
+
+4. Примените миграции:
 ```shell
-docker-compose build && docker-compose up
+docker-compose exec web python manage.py migrate
 ```
-4. Создать и применить миграции для таблиц:
+5. Создайте суперпользователя (если нужно):
 ```shell
-docker-compose run mailing python manage.py makemigratins && docker-compose run mailing python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
 ```
 
-Ручное:
-1. Выполнить вышеописанный п.1 и п.2.
-2. Установить все зависимости в файле requirements.txt.
-```shell
-pip install -r requirements.txt
-```
+# Использование
+## Админ-панель Django
+1. Перейдите по адресу http://localhost:8000/admin/.
+2. Войдите с использованием учетных данных суперпользователя, которые вы создали ранее.
+3. Используйте админ-панель для управления клиентами, рассылками и сообщениями.
 
-3. Установить и настроить PostgreSQL, Redis, nginx последнее является не обязательным для работы внутри сети.
-4. Создать и применить миграции для таблиц:
-```shell
-python manage.py makemigrations && python manage.py migrate
-```
+# API
+Вы можете использовать SwaggerUI, доступный по адресу http://localhost:8000/docs/, для документации API и тестирования запросов.
 
-5. Также необходимо создать пользователя БД для входа в админ-панель:
+# Завершение работы
+Чтобы остановить все контейнеры, выполните следующую команду:
 ```shell
-python manage.py createsuperuser
-```
-
-Запуск сервера:
-```shell
-python manage.py runserver 0.0.0.0:8000
-```
-Запуск Celery для выполнения фоновых заданий:
-```shell
-celery -A mailing beat -i info
+docker-compose down
 ```

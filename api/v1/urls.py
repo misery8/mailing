@@ -1,18 +1,21 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
 from .views import (
-    ClientCreateAPIView,
-    ClientAPIView,
-    MailingStatisticListAPIView,
-    MailingStatisticDetailAPIView,
-    MailingAPIView,
+    ClientViewSet,
+    MailingViewSet,
+    NotificationStatisticsViewSet,
+    NotificationCreateAPIView
 )
+
+router = DefaultRouter()
+router.register('clients', ClientViewSet)
+router.register('mailings', MailingViewSet)
 
 
 urlpatterns = [
-    path('clients/', ClientCreateAPIView.as_view()),
-    path('clients/<int:pk>/', ClientAPIView.as_view()),
-    path('mailing/statistic/', MailingStatisticListAPIView.as_view()),
-    path('mailing/<int:pk>/statistic/', MailingStatisticDetailAPIView.as_view()),
-    path('mailing/<int:pk>/', MailingAPIView.as_view()),
+    path('', include(router.urls)),
+    path('mailings/<int:pk>/statistics/', NotificationStatisticsViewSet.as_view()),
+    path('mailings/statistics/', NotificationStatisticsViewSet.as_view()),
+    path('notifications/', NotificationCreateAPIView.as_view())
 ]

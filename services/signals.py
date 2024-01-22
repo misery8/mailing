@@ -1,59 +1,41 @@
-from datetime import timedelta
+from typing import Any
 
-from celery.schedules import crontab
 from django.db.models.signals import (
     post_save,
-    pre_delete,
-    m2m_changed
 )
 from django.dispatch import receiver
-from django.db.utils import IntegrityError
+from django.utils import timezone
 
 from dto.models import (
-    Mailing,
     Client,
-    ClientProperty,
-    Message
+    MailingSettings,
 )
-from config import celery_app
+from .services import (
+    create_client_attribute,
+    get_clients_to_notify,
+    send_notifications_for_clients,
+)
 
 
-@receiver(m2m_changed, sender=Mailing.attribute_filter.through)
-def create_mailing_list(sender, instance: Mailing, action, **kwargs):
+@receiver(post_save, sender=Client)
+def handle_client_post_save(
+        sender: type(Client),
+        instance: Client,
+        created: bool,
+        **kwargs: Any
+) -> None:
 
-    if action == 'post_add':
-        clients_attributes_data = instance.attribute_filter.all()
-        clients_attributes = {}
-        for attr in clients_attributes_data:
-            if clients_attributes.get(attr.mobile_code):
-                clients_attributes[attr.mobile_code].add(attr.tag.id)
-            else:
-                clients_attributes[attr.mobile_code] = {attr.tag.id}
-
-        filterset = {
-            'mobile_code__in': list(clients_attributes.keys()),
-            'tag__in': list(*clients_attributes.values())
-        }
-        clients = Client.objects.filter(**filterset)
-        for client in clients:
-            try:
-                Message.objects.create(
-                    client=client,
-                    mailing=instance
-                )
-            except IntegrityError:
-                pass
+    create_client_attribute(instance)
 
 
-@receiver(m2m_changed, sender=Client.tag.through)
-def save_client_property(sender, instance: Client, action, **kwargs):
+@receiver(post_save, sender=MailingSettings)
+def handle_mailing_settings_post_save(
+        sender: type(MailingSettings), instance, created, **kwargs):
 
-    """ Сохраняем свойства клиента, для дальнейшей фильтрации по ним """
+    if created:
+        current_time = timezone.now()
 
-    if action == 'post_add':
-        for tag in instance.tag.all():
-            if not ClientProperty.objects.filter(tag=tag, mobile_code=instance.mobile_code).exists():
-                ClientProperty.objects.create(
-                    tag=tag,
-                    mobile_code=instance.mobile_code
-                )
+        if instance.start_time <= current_time <= instance.end_time:
+            clients_to_notify = get_clients_to_notify(instance)
+            # Запуск отправки уведомлений для выбранных клиентов
+            send_notifications_for_clients.delay(instance.id, clients_to_notify)

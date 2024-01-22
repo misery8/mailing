@@ -2,41 +2,47 @@ from rest_framework import serializers
 
 from dto.models import (
     Client,
-    Mailing,
-    Message, Tag
+    MailingSettings,
+    Notification,
+    NotificationStatistics,
+    Tag,
 )
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = '__all__'
 
 
 class ClientSerializer(serializers.ModelSerializer):
 
-    tag = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True
-    )
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = Client
-        fields = ('id', 'name', 'phone_number', 'tag', 'mobile_code', 'timezone')
-        read_only_fields = ('id',)
+        fields = '__all__'
 
 
 class MailingSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Mailing
-        fields = ('id', 'date_start', 'date_end', 'message', 'attribute_filter')
-        read_only_fields = ('id',)
+        model = MailingSettings
+        fields = '__all__'
 
 
-class MailingStatisticDetailSerializer(serializers.ModelSerializer):
+class NotificationStatisticsSerializer(serializers.ModelSerializer):
+
+
 
     class Meta:
-        model = Message
-        fields = ('id', 'client', 'mailing', 'status', 'created_at')
+        model = NotificationStatistics
+        fields = '__all__'
 
 
-class MailingStatisticList(serializers.Serializer):
+class NotificationSerializer(serializers.ModelSerializer):
 
-    mailing = serializers.CharField()
-    status = serializers.CharField()
-    count_of_messages = serializers.IntegerField()
+    class Meta:
+        model = Notification
+        fields = '__all__'

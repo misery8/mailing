@@ -2,51 +2,56 @@ version: '3.8'
 
 services:
   web:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    image: mailing
-    command: python manage.py runserver 0.0.0.0:8000
+    image: notification_service
+    container_name: notification
+    restart: always
+    ports:
+      - "8000:8000"
     volumes:
-      - ./:/opt/src/mailing/
-    expose:
-      - 8000
-    env_file:
-      - ./.env
+      - ./notification_service:/app
     depends_on:
       - db
       - redis
-
-  celery_worker:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    image: mailing
-    command: celery -A mailing worker -l info
-    volumes:
-      - ./:/opt/src/mailing/
-    env_file:
-      - ./.env
-    depends_on:
-      - redis
-      - db
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
 
   db:
-    image: postgres:14-alpine
+    image: postgres:alpine
+    container_name: postgres_db
     restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - ./.env
     environment:
-      POSTGRES_DB: mailing
-
-  nginx:
-    build: nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - web
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7-alpine
+    image: "redis:alpine"
+    container_name: redis
+    restart: always
+
+  celery:
+    image: ${CELERY_IMAGE}
+    container_name: celery_worker
+    restart: always
+    volumes:
+      - ./notification_service:/app
+    depends_on:
+      - db
+      - redis
+    command: sh -c "celery -A notification_service worker -l info"
+
+  celery-beat:
+    image: ${CELERY_IMAGE}
+    container_name: celery_beat
+    restart: always
+    volumes:
+      - ./notification_service:/app
+    depends_on:
+      - db
+      - redis
+      - celery
+    command: sh -c "celery -A notification_service beat -l info"
+
+volumes:
+  postgres_data:

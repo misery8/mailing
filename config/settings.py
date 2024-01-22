@@ -98,9 +98,9 @@ REST_FRAMEWORK = {
 # SPECTACULAR
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Messaging Service',
-    'VERSION': '0.1',
-    'SERVE_INCLUDE_SCHEMA': False,
+    'TITLE': 'Manage notifications service',
+    'VERSION': '0.2',
+    'SERVE_INCLUDE_SCHEMA': True,
 }
 
 WSGI_APPLICATION = 'config.wsgi.application'
